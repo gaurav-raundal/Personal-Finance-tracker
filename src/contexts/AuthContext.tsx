@@ -22,8 +22,8 @@ interface AuthContextType {
 // Create the context with a default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock database for users
-const MOCK_USERS = [
+// Mock database for users - we'll create a mutable version that can be updated
+let MOCK_USERS = [
   {
     id: '1',
     name: 'Admin User',
@@ -116,17 +116,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setIsLoading(false);
           resolve(false);
         } else {
-          // In a real app, we would make an API call to create the user
-          // For this mock app, we're just simulating success
+          // Create a new user and add to mock database
           const newUser = {
             id: String(MOCK_USERS.length + 1),
             name,
             email,
+            password,  // Store the password for login validation
             isAdmin: false,
           };
           
-          setUser(newUser);
-          localStorage.setItem('user', JSON.stringify(newUser));
+          // Add to mock database
+          MOCK_USERS = [...MOCK_USERS, newUser];
+          
+          // Set current user (without password)
+          const { password: _, ...userWithoutPassword } = newUser;
+          setUser(userWithoutPassword);
+          localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+          
           toast({
             title: "Registration successful",
             description: "Your account has been created",
